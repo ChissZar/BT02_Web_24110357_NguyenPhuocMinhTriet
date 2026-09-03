@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-labelledby="title description">
+    <title id="title">Category image placeholder</title>
+    <desc id="description">Ảnh đại diện mặc định cho Category</desc>
+    <rect width="640" height="420" rx="32" fill="#eef3ff"/>
+    <rect x="228" y="115" width="184" height="150" rx="22" fill="#ffffff" stroke="#9db5ee" stroke-width="8"/>
+    <circle cx="282" cy="163" r="21" fill="#6f91e5"/>
+    <path d="M250 236l55-54 39 37 28-25 40 42z" fill="#2457d6" opacity=".78"/>
+    <text x="320" y="326" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#2457d6">CATEGORY</text>
+</svg>
