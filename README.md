@@ -1,158 +1,173 @@
-# Bài tập 02 - CRUD Category bằng JPA
+# Dự án học phần Lập trình web
 
-Project thực hiện đầy đủ các nội dung của Bài tập 02:
+## Thông tin học phần
 
-1. Login với Cookie và Session theo mô hình MVC, truy xuất User bằng JPA.
-2. Cấu hình và kiểm tra JPA với Hibernate, SQL Server.
-3. CRUD Category theo mô hình MVC và kiến trúc 3 tầng: Controller - Service - DAO.
+| Nội dung | Thông tin |
+| --- | --- |
+| Sinh viên | Nguyễn Phước Minh Triết |
+| MSSV | 24110357 |
+| GVHD | ThS. Nguyễn Hữu Trung |
+| Mã lớp học phần | 261WEPR330479_09 |
+| Trường | Trường ĐH Công Nghệ Kỹ Thuật Tp.HCM |
 
-## Công nghệ sử dụng
+## Giới thiệu
 
-- JDK 17 trở lên
-- Maven
-- Tomcat 11
-- Jakarta Servlet 6.1, JSP 4.0, JSTL 3
-- Jakarta Persistence API qua Hibernate ORM 7.4.6.Final
-- SQL Server JDBC 12.10.0
+Ứng dụng web được xây dựng và phát triển xuyên suốt học phần Lập trình web. Các chức năng được bổ sung theo từng bài thực hành, trên cùng cấu trúc dự án MVC và kiến trúc Controller – Service – DAO.
 
-## Cấu trúc chính
+Dự án hiện sử dụng Java Servlet, JSP và JPA để quản lý tài khoản, hồ sơ người dùng và danh mục. README được cập nhật cùng các yêu cầu mới của học phần.
 
-```text
-src/main/java/vn/iotstar
-├── config       JPAConfig và TestJpa
-├── controller   Servlet Login, Logout, CRUD và hiển thị ảnh
-├── dao          Interface DAO
-├── dao/impl     Các thao tác JPA với EntityManager
-├── entity       User, Category và Video
-├── listener     Đóng EntityManagerFactory khi dừng ứng dụng
-├── service      Interface Service
-├── service/impl Xử lý nghiệp vụ Category
-└── util          Thư mục upload
-```
+## Chức năng hiện tại
 
-## 1. Tạo database
+- Đăng ký tài khoản và kích hoạt bằng OTP gửi qua email.
+- Đăng nhập, đăng xuất và quản lý phiên bằng Session.
+- Ghi nhớ tên đăng nhập bằng Cookie trong 30 phút; vẫn yêu cầu mật khẩu khi đăng nhập.
+- Quên mật khẩu và đặt lại mật khẩu bằng OTP email.
+- Xem, tìm kiếm, thêm, sửa và xóa Category.
+- Cập nhật họ tên, số điện thoại và ảnh đại diện bằng JPA.
+- Upload ảnh qua multipart và hiển thị ảnh qua servlet.
+- Sử dụng SiteMesh để quản lý bố cục trang hồ sơ.
+- Cấu hình và kiểm tra JPA với các entity User, Category và Video.
 
-Mở SQL Server Management Studio và chạy file:
+## Công nghệ
 
-```text
-database/create_database.sql
-```
+- Java 17 trở lên, Maven, Apache Tomcat 11.
+- Jakarta Servlet 6.1, JSP 4.0, JSTL 3.
+- JPA với Hibernate ORM, SQL Server và JDBC.
+- SiteMesh 3.3.0-RC1.
+- Jakarta Mail với Eclipse Angus để gửi email qua SMTP.
+- H2 cho kiểm thử nghiệp vụ tài khoản trong bộ nhớ.
 
-Hibernate sẽ tự tạo hoặc cập nhật ba bảng `users`, `categories` và `videos` nhờ cấu hình:
-
-```xml
-<property name="hibernate.hbm2ddl.auto" value="update"/>
-```
-
-## 2. Cấu hình kết nối SQL Server
-
-Mở file:
+## Cấu trúc dự án
 
 ```text
-src/main/resources/META-INF/persistence.xml
+database/                       Script khởi tạo database và bảng OTP
+src/main/java/vn/iotstar/
+├── config/                     Cấu hình và kiểm tra JPA
+├── controller/                 Servlet xử lý yêu cầu
+├── dao/                        Truy xuất dữ liệu bằng JPA
+├── entity/                     Ánh xạ các bảng dữ liệu
+├── filter/                     Kiểm tra phiên, CSRF và giới hạn yêu cầu
+├── listener/                   Quản lý vòng đời kết nối JPA
+├── service/                    Xử lý nghiệp vụ và gửi OTP
+└── util/                       Tiện ích mật khẩu và upload
+src/main/resources/META-INF/    Cấu hình persistence
+src/main/webapp/
+├── assets/                     CSS và ảnh mặc định
+├── views/                      Trang đăng nhập và CRUD Category
+└── WEB-INF/                    Cấu hình web, SiteMesh và các JSP nội bộ
+src/test/                       Mã và cấu hình kiểm thử
+pom.xml                         Dependency và cấu hình Maven
 ```
 
-Kiểm tra lại bốn giá trị sau theo SQL Server trên máy:
+## Cài đặt và chạy
 
-```text
-Server:   localhost:1433
-Database: jakartaJPA
-User:     sa
-Password: 1234567@a$
-```
+### Database
 
-Nếu SQL Server dùng mật khẩu khác, sửa thuộc tính `jakarta.persistence.jdbc.password`.
+Chạy `database/create_database.sql` trên SQL Server để tạo database `jakartaJPA` và các bảng `users`, `categories`, `videos`.
 
-## 3. Test cấu hình JPA
+Cấu hình kết nối trong `src/main/resources/META-INF/persistence.xml` theo SQL Server trên máy:
 
-Trong IDE, chạy hàm `main` của lớp:
+- `jakarta.persistence.jdbc.url`: server, cổng và tên database.
+- `jakarta.persistence.jdbc.user`: tài khoản SQL Server.
+- `jakarta.persistence.jdbc.password`: mật khẩu SQL Server.
 
-```text
-vn.iotstar.config.TestJpa
-```
+Dự án đang dùng `hibernate.hbm2ddl.auto=update` để tạo hoặc cập nhật bảng theo entity. Hai bảng `account_security` và `registration_keys` phục vụ kích hoạt tài khoản và OTP. Có thể tạo chúng bằng `database/auth-otp.sql` sau khi tạo bảng `users`.
 
-Hoặc chạy bằng Maven:
+### Email gửi OTP
 
-```bash
-mvn clean compile exec:java
-```
+Trong Eclipse/STS, mở server Tomcat → **Open launch configuration → Environment** và khai báo:
 
-Khi thành công, Console hiển thị SQL tạo/thêm dữ liệu và ba dòng:
+| Biến | Giá trị |
+| --- | --- |
+| `SMTP_HOST` | Máy chủ SMTP, ví dụ `smtp.gmail.com` |
+| `SMTP_PORT` | `587` mặc định, sử dụng STARTTLS |
+| `SMTP_USER` | Địa chỉ email dùng để gửi OTP |
+| `SMTP_PASSWORD` | Mật khẩu ứng dụng của email gửi |
+| `SMTP_FROM` | Địa chỉ gửi, thường giống `SMTP_USER` |
 
-```text
-Cấu hình JPA thành công.
-Category vừa tạo có ID: ...
-Tổng số Category: ...
-Tài khoản đăng nhập: trungnh / 123
-```
+Thông tin SMTP được đọc từ biến môi trường và được dùng chung cho ứng dụng. Email nhận OTP là email người dùng nhập khi đăng ký. Với Gmail, dùng mật khẩu ứng dụng của tài khoản gửi; nhập liền 16 ký tự, bỏ khoảng trắng phân nhóm. Khởi động lại Tomcat sau khi thay đổi cấu hình.
 
-## 4. Chạy CRUD Category
+### Upload ảnh
 
-1. Import project dưới dạng Maven project.
-2. Chọn JDK 17 trở lên.
-3. Cấu hình Tomcat 11.
-4. Chạy project và mở:
-
-```text
-http://localhost:8080/BT02_JPA_Category/login
-```
-
-Đăng nhập bằng tài khoản được tạo bởi `TestJpa`:
-
-```text
-Username: trungnh
-Password: 123
-```
-
-Các chức năng đã có:
-
-- Hiển thị và tìm kiếm Category.
-- Thêm Category bằng link ảnh hoặc file upload.
-- Cập nhật tên, ảnh và trạng thái.
-- Xóa Category.
-- Hiển thị ảnh upload qua servlet `/image`.
-- Lưu User vào Session sau khi đăng nhập.
-- Lưu username vào Cookie trong 30 phút khi chọn “Nhớ tài khoản”.
-- Hủy Session và Cookie khi đăng xuất.
-
-Thư mục upload mặc định là `uploads` trong thư mục người dùng. Có thể đổi khi chạy Tomcat bằng biến môi trường `UPLOAD_DIR` hoặc Java VM option:
+Thư mục mặc định là `uploads` trong thư mục người dùng hệ điều hành. Có thể thay đổi bằng biến môi trường `UPLOAD_DIR` hoặc VM option:
 
 ```text
 -Dupload.dir=D:\upload
 ```
 
-## 5. Build file WAR
+Tài khoản chạy Tomcat cần quyền đọc và ghi thư mục này. Database lưu tên file ảnh; file ảnh được lưu ngoài thư mục triển khai web.
 
-```bash
-mvn clean package
-```
+### Chạy trên Tomcat
 
-File tạo ra:
+1. Import bằng **Existing Maven Projects** trong Eclipse/STS.
+2. Chọn JDK 17 trở lên và **Maven → Update Project**.
+3. Cấu hình Tomcat 11, database và SMTP.
+4. Chọn **Run As → Run on Server**.
+
+Ví dụ với Tomcat chạy cổng 8081:
 
 ```text
-target/BT02_JPA_Category.war
+http://localhost:8081/BT02_JPA_Category/login
 ```
 
-## 6. Đưa source code lên GitHub
+Cổng và context path phụ thuộc cấu hình triển khai. Tên WAR hiện giữ là `BT02_JPA_Category` để tương thích với cấu hình server đã sử dụng.
 
-Tạo repository trống trên GitHub, mở Terminal tại thư mục project và chạy:
+### Build
 
 ```bash
-git init
-git add .
-git commit -m "Hoan thanh bai tap 02 CRUD Category bang JPA"
-git branch -M main
-git remote add origin https://github.com/TEN_TAI_KHOAN/TEN_REPOSITORY.git
-git push -u origin main
+mvn package
 ```
 
-Sau khi push thành công, nộp đường dẫn repository trên UTExLMS.
+Kết quả: `target/BT02_JPA_Category.war`. Thư mục `target` là đầu ra Maven và được loại khỏi Git.
 
-## Minh chứng nên chụp
+## Các đường dẫn chính
 
-1. File `persistence.xml` và Console báo cấu hình JPA thành công.
-2. Ba bảng `users`, `categories`, `videos` trong SQL Server.
-3. Trang Login, Session và Cookie `username` trên trình duyệt.
-4. Trang danh sách Category.
-5. Kết quả thêm, sửa và xóa Category.
-6. Repository GitHub hiển thị đầy đủ source code.
+| Đường dẫn | Chức năng |
+| --- | --- |
+| `/register` | Đăng ký |
+| `/activate` | Kích hoạt và gửi lại OTP |
+| `/login`, `/logout` | Đăng nhập, đăng xuất |
+| `/forgot-password` | Yêu cầu OTP đặt lại mật khẩu |
+| `/reset-password` | Xác nhận OTP và đổi mật khẩu |
+| `/admin/categories` | Quản lý Category |
+| `/profile`, `/member/myaccount` | Hồ sơ cá nhân |
+| `/image` | Hiển thị ảnh upload |
+
+## Quy tắc xử lý
+
+- Tài khoản đăng ký mới cần kích hoạt email trước khi đăng nhập.
+- OTP gồm 8 chữ số, có hiệu lực 10 phút, sử dụng một lần và gắn với mục đích kích hoạt hoặc đặt lại mật khẩu.
+- Gửi lại OTP cách nhau ít nhất 60 giây. Tối đa 5 lần thử sai trong cửa sổ hiệu lực; gửi lại không xóa số lần thử.
+- Khi gửi email thất bại, tài khoản có thể đã được lưu ở trạng thái chưa kích hoạt. Chức năng gửi lại OTP được dùng sau khi cấu hình email hoạt động.
+- Mật khẩu được băm bằng PBKDF2-HMAC-SHA256. Chính sách hiện tại phục vụ thực hành: không rỗng, tối đa 128 ký tự và xác nhận trùng khớp.
+- Tài khoản cũ chưa có bản ghi bảo mật được coi là đã kích hoạt; mật khẩu dạng cũ được chuyển sang dạng băm khi đăng nhập thành công.
+- Đặt lại mật khẩu yêu cầu đăng nhập lại; phiên cũ bị từ chối khi truy cập trang được bảo vệ.
+- Ảnh đại diện nhận JPEG/PNG tối đa 5 MB và 16 triệu điểm ảnh. Không chọn ảnh mới sẽ giữ ảnh hiện tại.
+- SiteMesh chỉ áp dụng cho hai đường dẫn hồ sơ, dùng dispatcher `include` cho Tomcat 11.
+- Các POST xác thực có kiểm tra CSRF và giới hạn 20 yêu cầu/15 phút/IP trong một tiến trình.
+
+## Kiểm thử
+
+Các lớp sau có hàm `main`, chạy bằng **Run As → Java Application**:
+
+| Lớp | Nội dung |
+| --- | --- |
+| `TestJpa` | Kiểm tra kết nối JPA và thêm dữ liệu mẫu vào database đang cấu hình |
+| `PasswordsCheck` | Băm mật khẩu, salt, Unicode và kiểm tra độ dài |
+| `OtpPolicyCheck` | Hạn OTP, gửi lại, giới hạn thử và sử dụng một lần |
+| `AccountServiceCheck` | Luồng tài khoản với H2 và hộp thư giả |
+| `ProfileControllerCheck` | Kiểm tra logic cập nhật hồ sơ |
+
+Các lớp `*Check` là chương trình kiểm tra độc lập, không tự chạy qua `mvn test`. `AccountServiceCheck` dùng persistence unit `accounts-test` với database trong bộ nhớ. `TestJpa` có ghi dữ liệu mẫu, còn việc gửi email thực tế được kiểm tra qua ứng dụng trên Tomcat.
+
+Các luồng kiểm tra trên web gồm đăng ký → kích hoạt → đăng nhập; quên mật khẩu → OTP → đổi mật khẩu; cập nhật hồ sơ và ảnh; CRUD Category.
+
+## Phát triển tiếp
+
+Các yêu cầu mới của học phần được bổ sung vào các tầng hiện có. Mỗi lần cập nhật chức năng sẽ cập nhật entity/script dữ liệu, giao diện, kiểm thử và phần hướng dẫn tương ứng trong README.
+
+## Tài liệu tham khảo
+
+- [Jakarta Persistence](https://jakarta.ee/specifications/persistence/)
+- [SiteMesh](https://github.com/sitemesh/sitemesh3)
+- [Eclipse Angus Mail](https://eclipse-ee4j.github.io/angus-mail/)

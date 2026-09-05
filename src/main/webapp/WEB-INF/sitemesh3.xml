@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemesh>
+    <decorator-prefix>/WEB-INF/decorators/</decorator-prefix>
+    <dispatch-mode>include</dispatch-mode>
+    <mapping path="/profile" decorator="account.jsp"/>
+    <mapping path="/member/myaccount" decorator="account.jsp"/>
+</sitemesh>

@@ -35,14 +35,9 @@ public class LoginController extends HttpServlet {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (Constant.COOKIE_REMEMBER.equals(cookie.getName())) {
-                    String username = URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8);
-                    User user = userService.get(username);
-                    if (user != null) {
-                        session = request.getSession(true);
-                        session.setAttribute(Constant.SESSION_ACCOUNT, user);
-                        response.sendRedirect(request.getContextPath() + "/waiting");
-                        return;
-                    }
+                    try {
+                        request.setAttribute("rememberedUsername", URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8));
+                    } catch (IllegalArgumentException ignored) { }
                 }
             }
         }
@@ -57,10 +52,10 @@ public class LoginController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String username = normalize(request.getParameter("username"));
-        String password = normalize(request.getParameter("password"));
+        String password = request.getParameter("password");
         boolean rememberMe = "on".equals(request.getParameter("remember"));
 
-        if (username.isEmpty() || password.isEmpty()) {
+        if (username.isEmpty() || password == null || password.isEmpty() || password.length() > 128) {
             request.setAttribute("alert", "Tài khoản hoặc mật khẩu không được rỗng");
             request.getRequestDispatcher("/views/login.jsp").forward(request, response);
             return;
@@ -68,12 +63,13 @@ public class LoginController extends HttpServlet {
 
         User user = userService.login(username, password);
         if (user == null) {
-            request.setAttribute("alert", "Tài khoản hoặc mật khẩu không đúng");
+            request.setAttribute("alert", "Tài khoản/mật khẩu không đúng hoặc tài khoản chưa kích hoạt.");
             request.getRequestDispatcher("/views/login.jsp").forward(request, response);
             return;
         }
 
         HttpSession session = request.getSession(true);
+        request.changeSessionId();
         session.setAttribute(Constant.SESSION_ACCOUNT, user);
         session.setMaxInactiveInterval(30 * 60);
 
@@ -83,6 +79,13 @@ public class LoginController extends HttpServlet {
                     URLEncoder.encode(username, StandardCharsets.UTF_8));
             cookie.setMaxAge(30 * 60);
             cookie.setHttpOnly(true);
+            cookie.setSecure(request.isSecure());
+            cookie.setAttribute("SameSite", "Lax");
+            cookie.setPath(cookiePath(request));
+            response.addCookie(cookie);
+        } else {
+            Cookie cookie = new Cookie(Constant.COOKIE_REMEMBER, "");
+            cookie.setMaxAge(0);
             cookie.setPath(cookiePath(request));
             response.addCookie(cookie);
         }

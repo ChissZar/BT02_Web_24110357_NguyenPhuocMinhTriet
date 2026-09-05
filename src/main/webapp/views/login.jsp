@@ -21,8 +21,9 @@
         </c:if>
 
         <form action="${pageContext.request.contextPath}/login" method="post">
+            <input type="hidden" name="csrf" value="${sessionScope.authCsrf}">
             <label for="username">Tài khoản</label>
-            <input type="text" id="username" name="username" value="${fn:escapeXml(param.username)}" autocomplete="username" required>
+            <input type="text" id="username" name="username" value="${fn:escapeXml(empty param.username ? rememberedUsername : param.username)}" autocomplete="username" required>
 
             <label for="password">Mật khẩu</label>
             <input type="password" id="password" name="password" autocomplete="current-password" required>
@@ -35,7 +36,13 @@
             <button class="button primary full" type="submit">Đăng nhập</button>
         </form>
 
-        <p class="login-hint">Tài khoản được tạo khi chạy TestJpa: <strong>trungnh / 123</strong></p>
+        <c:if test="${not empty sessionScope.authNotice}">
+            <p role="status"><c:out value="${sessionScope.authNotice}"/></p>
+            <c:remove var="authNotice" scope="session"/>
+        </c:if>
+        <p><a href="${pageContext.request.contextPath}/register">Đăng ký</a> ·
+           <a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu</a> ·
+           <a href="${pageContext.request.contextPath}/activate">Kích hoạt tài khoản</a></p>
     </section>
 </main>
 </body>

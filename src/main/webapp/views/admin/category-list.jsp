@@ -18,6 +18,7 @@
             <p class="muted">Tổng số kết quả: ${count}</p>
         </div>
         <div class="heading-actions">
+            <a class="button ghost" href="${pageContext.request.contextPath}/profile">Hồ sơ cá nhân</a>
             <c:if test="${not empty sessionScope.account}">
                 <span class="welcome">Xin chào, <c:out value="${sessionScope.account.fullName}"/></span>
                 <a class="button ghost" href="${pageContext.request.contextPath}/logout">Đăng xuất</a>
